@@ -1,0 +1,285 @@
+	IPL Data Analysis (2008-2016) using MySQL
+
+Overview:  Analyses IPL 2008-2016 Data. 
+
+source of Data: https://github.com/12345k/IPL-Dataset
+
+Analysis:
+
+{1} First things first: Table Schema information using DESC command;
+	-> USE DATABASE ipl;
+	-> SHOW TABLES;
+	-> DESC ipl2;
+
+-----------------+----------+------+-----+---------+-------+
+| Field           | Type     | Null | Key | Default | Extra |
++-----------------+----------+------+-----+---------+-------+
+| id              | int      | YES  |     | NULL    |       |
+| season          | int      | YES  |     | NULL    |       |
+| city            | text     | YES  |     | NULL    |       |
+| played_date     | datetime | YES  |     | NULL    |       |
+| team1           | text     | YES  |     | NULL    |       |
+| team2           | text     | YES  |     | NULL    |       |
+| toss_winner     | text     | YES  |     | NULL    |       |
+| toss_decision   | text     | YES  |     | NULL    |       |
+| result          | text     | YES  |     | NULL    |       |
+| dl_applied      | int      | YES  |     | NULL    |       |
+| winner          | text     | YES  |     | NULL    |       |
+| win_by_runs     | int      | YES  |     | NULL    |       |
+| win_by_wickets  | int      | YES  |     | NULL    |       |
+| player_of_match | text     | YES  |     | NULL    |       |
+| venue           | text     | YES  |     | NULL    |       |
+| umpire1         | text     | YES  |     | NULL    |       |
+| umpire2         | text     | YES  |     | NULL    |       |
+| umpire3         | text     | YES  |     | NULL    |       |
++-----------------+----------+------+-----+---------+-------+
+
+
+
+{2} Total records in ipl2 table;
+
+	mysql> select count(distinct(id)) from ipl2;
++-----------+
+| count(id) |
++-----------+
+|       577 |
++-----------+
+
+
+
+{3} Sample records to get idea of data present in ipl2
+
+id   | season | city       | played_date         | team1                 | team2                       | toss_winner                 | toss_decision | result | dl_applied | winner                      | win_by_runs | win_by_wickets | player_of_match | venue                                      | umpire1   | umpire2        | umpire3 |
++------+--------+------------+---------------------+-----------------------+-----------------------------+-----------------------------+---------------+--------+------------+-----------------------------+-------------+----------------+-----------------+--------------------------------------------+-----------+----------------+---------+
+|    1 |   2008 | Bangalore  | 2008-04-18 00:00:00 | Kolkata Knight Riders | Royal Challengers Bangalore | Royal Challengers Bangalore | field         | normal |          0 | Kolkata Knight Riders       |         140 |              0 | BB McCullum     | M Chinnaswamy Stadium                      | Asad Rauf | RE Koertzen    |         |
+|    2 |   2008 | Chandigarh | 2008-04-19 00:00:00 | Chennai Super Kings   | Kings XI Punjab             | Chennai Super Kings         | bat           | normal |          0 | Chennai Super Kings         |          33 |              0 | MEK Hussey      | Punjab Cricket Association Stadium, Mohali | MR Benson | SL Shastri     |         |
+|    3 |   2008 | Delhi      | 2008-04-19 00:00:00 | Rajasthan Royals      | Delhi Daredevils            | Rajasthan Royals            | bat           | normal |          0 | Delhi Daredevils            |           0 |              9 | MF Maharoof     | Feroz Shah Kotla                           | Aleem Dar | GA Pratapkumar |         |
+|    4 |   2008 | Mumbai     | 2008-04-20 00:00:00 | Mumbai Indians        | Royal Challengers Bangalore | Mumbai Indians              | bat           | normal |          0 | Royal Challengers Bangalore |           0 |              5 | MV Boucher      | Wankhede Stadium                           | SJ Davis  | DJ Harper      |         |
+|    5 |   2008 | Kolkata    | 2008-04-20 00:00:00 | Deccan Chargers       | Kolkata Knight Riders       | Deccan Chargers             | bat           | normal |          0 | Kolkata Knight Riders       |           0 |              5 | DJ Hussey       | Eden Gardens                               | BF Bowden | K Hariharan    |         |
++------+--------+------------+---------------------+-----------------------+-----------------------------+-----------------------------+--------------+-----------------------+-----------------------------+-----------------------------+--------------+-----------------------+-----------------------------+-----------------------------
+
+
+
+
+{4} Season wise number of matches played
+
+	mysql> select season, count(id) from ipl2 group by season;
++--------+-----------+
+| season | count(id) |
++--------+-----------+
+|   2008 |        58 |
+|   2009 |        57 |
+|   2010 |        60 |
+|   2011 |        73 |
+|   2012 |        74 |
+|   2013 |        76 |
+|   2014 |        60 |
+|   2015 |        59 |
+|   2016 |        60 |
++--------+-----------+
+
+
+
+{5} 	 a)Team won Batting first
+		mysql> SELECT count(win_by_runs) as Team_won_Batting_First
+		       FROM ipl2 
+		       WHERE win_by_runs>0;
++------------------------+
+| Team_won_Batting_First |
++------------------------+
+|                    261 |
++------------------------+
+
+	b) Team Won Batting Second
+
+	mysql>  SELECT count(win_by_wickets) as Team_won_Batting_Second 
+		FROM ipl2 
+		WHERE win_by_wickets>0;
++-------------------------+
+| Team_won_Batting_Second |
++-------------------------+
+|                     307 |
++-------------------------+
+1 row in set (0.00 sec)
+
+
+	c) Tied Matches (No Result)
+
+	mysql>  SELECT count(win_by_wickets) as No_Result
+		FROM ipl2 
+		WHERE win_by_wickets=0 AND win_by_runs=0;
++-------------------------+
+|        No_Result 
++-------------------------+
+|                       9 |
++-------------------------+
+	
+	
+{6} Teams involved in a tied_match;
+
+mysql> select id, team1,team2, Win_by_wickets, win_by_runs from ipl2 where win_by_wickets=0 and win_by_runs=0;
++------+-----------------------------+-----------------------------+----------------+-------------+
+| id   | team1                       | team2                       | Win_by_wickets | win_by_runs |
++------+-----------------------------+-----------------------------+----------------+-------------+
+|   67 | Rajasthan Royals            | Kolkata Knight Riders       |              0 |           0 |
+|  131 | Kings XI Punjab             | Chennai Super Kings         |              0 |           0 |
+|  242 | Delhi Daredevils            | Pune Warriors               |              0 |           0 |
+|  329 | Royal Challengers Bangalore | Sunrisers Hyderabad         |              0 |           0 |
+|  342 | Delhi Daredevils            | Royal Challengers Bangalore |              0 |           0 |
+|  417 | Rajasthan Royals            | Kolkata Knight Riders       |              0 |           0 |
+|  477 | Rajasthan Royals            | Kings XI Punjab             |              0 |           0 |
+|  487 | Royal Challengers Bangalore | Rajasthan Royals            |              0 |           0 |
+|  512 | Delhi Daredevils            | Royal Challengers Bangalore |              0 |           0 |
++------+-----------------------------+-----------------------------+----------------+-------------+
+
+
+{7} Most successful team: Team which won most number of matches 
+
+mysql> SELECT winner, count(winner) 
+	FROM ipl2 
+	GROUP BY winner 
+	ORDER BY count(winner) DESC;
++-----------------------------+---------------+
+| winner                      | count(winner) |
++-----------------------------+---------------+
+| Mumbai Indians              |            80 |
+| Chennai Super Kings         |            79 |
+| Royal Challengers Bangalore |            70 |
+| Kolkata Knight Riders       |            68 |
+| Rajasthan Royals            |            63 |
+| Kings XI Punjab             |            63 |
+| Delhi Daredevils            |            56 |
+| Sunrisers Hyderabad         |            34 |
+| Deccan Chargers             |            29 |
+| Pune Warriors               |            12 |
+| Gujarat Lions               |             9 |
+| Kochi Tuskers Kerala        |             6 |
+| Rising Pune Supergiants     |             5 |
+|                             |             3 |
++-----------------------------+---------------+
+
+{8} Total matches played by each team:
+	
+Definition of matches played : A team can be in either team1 or team2 field to be consider as a match played, so we need to count of team1 and team2 team wise.
+
+	-> used UNION ALL to include duplicate values bcoz Rising pune Super giants & Kochi Tuskers Kerala played same no.of matches, hence using UNION was giving wrong result;
+
+ select t1.team1 as team , sum(tot1) as total_played_matches
+    ->  from
+    -> (select team1, count(team1)as tot1 from ipl2 group by team1
+    ->  union all
+    -> select team2, count(team2) as tot1 from ipl2 group by team2) as t1
+    -> group by team
+    -> order by total_played_matches DESC;
++-----------------------------+----------------------+
+| team                        | total_played_matches |
++-----------------------------+----------------------+
+| Mumbai Indians              |                  140 |
+| Royal Challengers Bangalore |                  139 |
+| Kings XI Punjab             |                  134 |
+| Delhi Daredevils            |                  133 |
+| Kolkata Knight Riders       |                  132 |
+| Chennai Super Kings         |                  131 |
+| Rajasthan Royals            |                  118 |
+| Deccan Chargers             |                   75 |
+| Sunrisers Hyderabad         |                   62 |
+| Pune Warriors               |                   46 |
+| Gujarat Lions               |                   16 |
+| Kochi Tuskers Kerala        |                   14 |
+| Rising Pune Supergiants     |                   14 |
+
+
+
+{9}  Teams and their toss winning count
+
+mysql> select toss_winner, count(toss_winner) as tossCount from ipl2 group by toss_winner order by tossCount DESC;
++-----------------------------+-----------+
+| toss_winner                 | tossCount |
++-----------------------------+-----------+
+| Mumbai Indians              |        74 |
+| Kolkata Knight Riders       |        69 |
+| Chennai Super Kings         |        66 |
+| Kings XI Punjab             |        64 |
+| Delhi Daredevils            |        64 |
+| Rajasthan Royals            |        63 |
+| Royal Challengers Bangalore |        61 |
+| Deccan Chargers             |        43 |
+| Sunrisers Hyderabad         |        30 |
+| Pune Warriors               |        20 |
+| Kochi Tuskers Kerala        |         8 |
+| Gujarat Lions               |         8 |
+| Rising Pune Supergiants     |         7 |
++-----------------------------+-----------+
+
+
+
+
+{10} Toss Winning Percentage team-wise sorted by highest TWP:
+
+select tpm.team, tpm.total_played_matches,tc.tossCount, (tc.tossCount/tpm.total_played_matches)*100 as toss_winning_percent
+from 
+   (select t1.team1 as team , sum(tot1) as total_played_matches
+	from
+ 		(select team1, count(team1)as tot1 from ipl2 group by team1
+ 		 union all
+		 select team2, count(team2) as tot1 from ipl2 group by team2) as t1
+	group by team
+	order by total_played_matches DESC) as tpm
+Inner join 
+   (select toss_winner, count(toss_winner) as tossCount from ipl2
+   group by toss_winner
+   order by tossCount DESC) as tc
+on tc.toss_winner = tpm.team
+group by tpm.team, tc.tossCount
+order by toss_winning_percent DESC;
+
++-----------------------------+----------------------+-----------+----------------------+
+| team                        | total_played_matches | tossCount | toss_winning_percent |
++-----------------------------+----------------------+-----------+----------------------+
+| Deccan Chargers             |                   75 |        43 |              57.3333 |
+| Kochi Tuskers Kerala        |                   14 |         8 |              57.1429 |
+| Rajasthan Royals            |                  118 |        63 |              53.3898 |
+| Mumbai Indians              |                  140 |        74 |              52.8571 |
+| Kolkata Knight Riders       |                  132 |        69 |              52.2727 |
+| Chennai Super Kings         |                  131 |        66 |              50.3817 |
+| Gujarat Lions               |                   16 |         8 |              50.0000 |
+| Rising Pune Supergiants     |                   14 |         7 |              50.0000 |
+| Sunrisers Hyderabad         |                   62 |        30 |              48.3871 |
+| Delhi Daredevils            |                  133 |        64 |              48.1203 |
+| Kings XI Punjab             |                  134 |        64 |              47.7612 |
+| Royal Challengers Bangalore |                  139 |        61 |              43.8849 |
+| Pune Warriors               |                   46 |        20 |              43.4783 |
++-----------------------------+----------------------+-----------+----------------------+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
